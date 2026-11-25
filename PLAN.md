@@ -19,7 +19,7 @@ A system that boots to a login and accepts an ssh connection, and nothing more. 
 2. **A Linux kernel for the pdp64** (`arch/pdp64`). Debian 13 ships the 6.12 series (source package `linux`, 6.12.8 at release, security updates since), so the port is made against 6.12. This is a separate, large piece of work: it shares only the architecture decisions with the OpenBSD kernel. A survey of what Linux needs per architecture (the way the OpenBSD assembly was inventoried) is the first thing to do for it; the pdp64 repository's kernel assembly survey already counted Linux's.
 3. **A compiler and a C library.** Debian builds with GCC 14.2, binutils 2.43 and glibc 2.40. The pdp64 back end is LLVM, so a decision is needed: a GCC back end, or building Debian's packages with clang. The C library is glibc in Debian; it needs its own port (dynamic loader, TLS, relocations, syscall stubs), which depends on the dynamic-linking ABI being fixed.
 4. **Debian's own infrastructure for a new architecture.** A new `dpkg` architecture name with its table entries (dpkg 1.22.22), the new triple known to `config.sub` and `config.guess` (the copies packages take from `autotools-dev` 20240727.1 and `autoconf`), and `debootstrap` (1.0.141) with its foreign and second stage for the bootstrap. Debian also has the infrastructure for unofficial ports (its ports archive keyring is in trixie). These are from knowledge of Debian and still to be verified one by one.
-5. **The bootstrap build.** The 72 source packages cannot be built alone: their build dependencies (compilers, `make`, the autotools, and so on) come first. That closure is not measured yet. The cross-bootstrap tool Debian developers use for new architectures is not in the archive's source index (searched); where it lives and whether it fits is to be looked up.
+5. **The bootstrap build.** The 72 source packages cannot be built alone: their build dependencies (compilers, `make`, the autotools, and so on) come first. That closure is not measured yet. The cross-bootstrap tool Debian developers use for new architectures, `rebootstrap`, is not in the archive; it lives on Salsa (see the documentation below). Debian's own figure is about 500 source packages to bootstrap a new architecture, of which `rebootstrap` exercises around 100, so the build-dependency closure of our 72 is expected to be a few hundred.
 
 ## Order of work, once OpenBSD is running
 
@@ -36,3 +36,16 @@ A system that boots to a login and accepts an ssh connection, and nothing more. 
 - whether a root file system on the virtio disk needs an initramfs (probably not);
 - network configuration in the minimal system: a static address or a DHCP client;
 - GCC back end or clang, and glibc or another C library.
+
+## Where the documentation is
+
+What Debian has written on bringing up a new architecture (found by search, pages not yet read in full; some are several years old, so commands and mirror names may be out of date):
+
+- [DebianBootstrap](https://wiki.debian.org/DebianBootstrap) and its [TODO](https://wiki.debian.org/DebianBootstrap/TODO): the bootstrap problem, the dependency cycles, and the idea of dropping architecture-independent build dependencies while bootstrapping.
+- [rebootstrap](https://wiki.debian.org/HelmutGrohne/rebootstrap) (source on Salsa, `helmutg/rebootstrap`): Helmut Grohne's cross-bootstrap script, run weekly against about 20 architectures; the [debian-cross mailing list](https://lists.debian.org/debian-cross/) and `#debian-bootstrap` on OFTC are where it is discussed.
+- [MultiarchCrossToolchainBootstrap](https://wiki.debian.org/MultiarchCrossToolchainBootstrap) and [MultiarchCrossToolchainBuild](https://wiki.debian.org/MultiarchCrossToolchainBuild): the staged gcc, libc and binutils build for an architecture that is not in the archive yet, with build profiles.
+- [CrossBuildPackagingGuidelines](https://wiki.debian.org/CrossBuildPackagingGuidelines) and the [cross-buildable base](https://wiki.debian.org/ReleaseGoals/CrossBuildableBase) release goal.
+- [Bootstrapping Debian-based distributions for new architectures](https://archive.fosdem.org/2013/schedule/event/debian_bootstrap/) (FOSDEM 2013) and the [2014 bootstrap sprint results](https://wiki.debian.org/Sprints/2014/BootstrapSprint/Results).
+- [Debootstrap](https://wiki.debian.org/Debootstrap) and [EmDebian/CrossDebootstrap](https://wiki.debian.org/EmDebian/CrossDebootstrap): making the root file system from a host.
+- Language compilers needed along the way: [BootstrappingGHC](https://wiki.debian.org/PortsDocs/BootstrappingGHC) and [BootstrappingFPC](https://wiki.debian.org/PortsDocs/BootstrappingFPC).
+- A search for a single "porting guide" page (`PortsDocs/NewArch`) found none: the knowledge is spread over these pages and the mailing lists.

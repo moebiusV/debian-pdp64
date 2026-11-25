@@ -1,0 +1,13 @@
+title: debian-pdp64
+description: A port of Debian 13 to the pdp64: the smallest bootable Debian you can ssh into, and the plan for it
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: false
+exclude:
+  - tools
+  - overlay
+  - patches
+  - cache
+  - BASE

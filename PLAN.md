@@ -30,6 +30,14 @@ A system that boots to a login and accepts an ssh connection, and nothing more. 
 5. Cross-bootstrap the 72 packages and their build dependencies.
 6. Boot the kernel in QEMU to a shell, then run the second stage and ssh in.
 
+## What depends on the kernel, and what does not
+
+The bootstrap does not wait for a bootable kernel, but it does wait for the kernel's interface to userspace:
+
+- **Needed first: the Linux ABI for the pdp64.** glibc is built against the kernel's userspace headers (`arch/pdp64` `uapi`: system-call numbers and convention, register and signal-frame layouts, `stat` and the other structures). So a minimal `arch/pdp64` skeleton with those headers comes before glibc, and fixing them depends on the architecture decisions shared with the OpenBSD plan.
+- **Not needed yet: a running kernel.** Cross-building the 72 source packages and their build dependencies happens on the host.
+- **Needed when something must run on the pdp64:** debootstrap's second stage, test suites, native builds, and the final boot and ssh. There are two ways to get there: boot the Linux port in QEMU, or add the pdp64 to QEMU's `linux-user` mode (which translates the system calls and runs the binaries on the host without a kernel; our QEMU is built with user mode off today). The second needs much less than a kernel and lets the bootstrap run ahead of it. *(From knowledge of how these pieces fit; not yet checked against Debian's documentation.)*
+
 ## Open
 
 - init system: `systemd` (the default, no smaller alternative) unless that proves a problem to port;
